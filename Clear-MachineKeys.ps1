@@ -158,11 +158,12 @@ PROCESS {
         }
 
         # Process folder
-        foreach ($file in (Get-ChildItem -Path $Path -File)) {
+        foreach ($fileName in [IO.Directory]::EnumerateFiles($Path)) {
             # Stop process on limits
             if (($LimitFiles -ne 0 -and $processedFiles -ge $LimitFiles) -or ($LimitErrors -ne 0 -and $errorFiles -ge $LimitErrors)) {
                 break
             }
+            $file = Get-Item $fileName
             # Detect age of file
             if ($file.LastWriteTime -le $lastWrite -and -not $excludeFiles.Contains($file.Name)) {
                 if ($WhatIfPreference) { 
