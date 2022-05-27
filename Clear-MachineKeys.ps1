@@ -43,7 +43,7 @@ the specified time are considered for deletion or moving. Default value is 90 da
 
 .PARAMETER Delete
 Files are deleted rather than moved. Moving files allowing simple way to restore them 
-if any issues are observed. Files are moved to $Path\_saved folder. Use this
+if any issues are observed. Files are moved to $MovePath folder. Use this
 parameter carefully.
 
 .PARAMETER LimitFiles
@@ -54,6 +54,9 @@ Stop process after limited errors.
 
 .PARAMETER AsUser
 Exclude user private keys too. Experimental feature.
+
+.PARAMETER MovePath
+Destination path for backup. Default value is $Path\_saved.
 
 .INPUTS
 None.
@@ -100,7 +103,9 @@ https://kb.vmware.com/s/article/82553
         [Parameter(Mandatory=$False,ValueFromPipeline=$False,ValueFromPipelineByPropertyName=$False)]
         [int]$LimitErrors = [Int32]::MaxValue,
         [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
-        [switch]$AsUser
+        [switch]$AsUser,
+        [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
+        [string]$MovePath = ""
     )
 
 PROCESS {
@@ -129,6 +134,12 @@ PROCESS {
         Write-Verbose "Machine GUID: $($machineGuid)"    
 
         $lastWrite = (Get-Date).AddDays(-$CreatedBefore)
+        $lastBoot = (Get-CimInstance -ComputerName localhost -Class CIM_OperatingSystem -ErrorAction Ignore).LastBootUpTime
+
+        if ($lastBoot.AddDays(-1) -gt $lastWrite) {
+            Write-Host "Last boot was $lastBoot, but you want to process files before $lastWrite. Try use '-CreatedBefore $(((Get-Date) - $lastBoot).Days + 1)'"
+        }
+
         # Well-known exclusions
         $excludeFiles = @(
             "6de9cb26d2b98c01ec4e9e8b34824aa2_$machineGuid", # iisConfigurationKey
@@ -139,6 +150,7 @@ PROCESS {
             "7a436fe806e483969f48a894af2fe9a1_$machineGuid", # MS IIS DCOM Server
             "f686aace6942fb7f7ceb231212eef4a4_$machineGuid"  # TSSecKeySet1
             )
+        Write-Progress -Activity "Clear-MachineKeys" -Status "Enumeratin exclusions"
         # Add exclusions from local machine cert store
         $excludeFiles = $excludeFiles + @(Get-StoreCertificates 'Cert:\LocalMachine') 
         if ($AsUser) {
@@ -150,20 +162,23 @@ PROCESS {
         $errorFiles = 0
         # Initialize move path and create folder it is not exist
         if (-not $Delete) {
-            $movePath = Join-Path $Path "_saved"
-            Write-Verbose "Move path:  $movePath"
-            if (-not (Test-Path $movePath)) {
-                New-Item -Path $movePath -ItemType Directory -Force -ErrorAction Stop | Out-Null
+            if ($MovePath.Length -eq 0) {
+                $MovePath = Join-Path $Path "_saved"
+            }
+            Write-Verbose "Move path:  $MovePath"
+            if (-not (Test-Path $MovePath)) {
+                New-Item -Path $MovePath -ItemType Directory -Force -ErrorAction Stop | Out-Null
             }
         }
-
+        
+        Write-Progress -Activity "Clear-MachineKeys" -Status "Loading directory contents"
         # Process folder
-        foreach ($fileName in [IO.Directory]::EnumerateFiles($Path)) {
+        [IO.Directory]::EnumerateFiles($Path) | ForEach-Object { 
             # Stop process on limits
             if (($LimitFiles -ne 0 -and $processedFiles -ge $LimitFiles) -or ($LimitErrors -ne 0 -and $errorFiles -ge $LimitErrors)) {
                 break
             }
-            $file = Get-Item $fileName
+            $file = Get-Item $_
             # Detect age of file
             if ($file.LastWriteTime -le $lastWrite -and -not $excludeFiles.Contains($file.Name)) {
                 if ($WhatIfPreference) { 
@@ -185,7 +200,7 @@ PROCESS {
                         }
                         else {
                             try {
-                                $file.MoveTo($(Join-Path $movePath $file.Name))
+                                $file.MoveTo($(Join-Path $MovePath $file.Name))
                                 $processedFiles++  
                             }
                             catch {
@@ -195,17 +210,25 @@ PROCESS {
                         }
                     }
                 }
+                if (($processedFiles % 100) -eq 0) {
+                    if ($LimitFiles -lt [Int32]::MaxValue) {
+                        Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"}) $($processedFiles)/$($LimitFiles)" -CurrentOperation $file.Name -PercentComplete ($processedFiles/$LimitFiles*100)
+                    }
+                    else {
+                        Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"})" -CurrentOperation $file.Name
+                    }
+                }
             }
             else {
                 Write-Debug "Skip: $($file.Name)"
             }            
         }
+        Write-Progress -Activity "Clear-MachineKeys" -Status "Done" -Completed
         if ($WhatIfPreference) { 
             Write-Host "WhatIf: I will $(if($Delete) {'delete'} else {'move'}) $ProcessedFiles files." -ForegroundColor Yellow
         } else {
             Write-Host "$processedFiles files $(if($Delete) {'Deleted'} else {'moved'}) and $errorFiles errors." -ForegroundColor $(if ($errorFiles -eq 0) {"Green"} else {"Red"})
-        }
-
+        }        
     }
     catch {
         Write-Error $_
