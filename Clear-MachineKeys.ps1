@@ -174,12 +174,12 @@ PROCESS {
         
         Write-Progress -Activity "Clear-MachineKeys" -Status "Loading directory contents"
         # Process folder
-        [IO.Directory]::EnumerateFiles($Path) | ForEach-Object { 
+        foreach ($fileName in [IO.Directory]::EnumerateFiles($Path)) { 
             # Stop process on limits
             if (($LimitFiles -ne 0 -and $processedFiles -ge $LimitFiles) -or ($LimitErrors -ne 0 -and $errorFiles -ge $LimitErrors)) {
                 break
             }
-            $file = Get-Item $_
+            $file = Get-Item $fileName
             # Detect age of file
             if ($file.LastWriteTime -le $lastWrite -and -not $excludeFiles.Contains($file.Name)) {
                 if ($WhatIfPreference) { 
