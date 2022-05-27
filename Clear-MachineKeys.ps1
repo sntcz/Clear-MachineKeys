@@ -90,13 +90,13 @@ https://kb.vmware.com/s/article/82553
 
 #>
 
-[CmdletBinding(SupportsShouldProcess)]
+[CmdletBinding(SupportsShouldProcess, DefaultParameterSetName = 'Move')]
     Param(
         [Parameter(Mandatory=$False,ValueFromPipeline=$False,ValueFromPipelineByPropertyName=$False)]
         [string]$Path = "C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys",
         [Parameter(Mandatory=$False,ValueFromPipeline=$False,ValueFromPipelineByPropertyName=$False)]
         [int]$CreatedBefore = 90,
-        [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
+        [Parameter(ParameterSetName='Delete',Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
         [switch]$Delete,
         [Parameter(Mandatory=$False,ValueFromPipeline=$False,ValueFromPipelineByPropertyName=$False)]
         [int]$LimitFiles = [Int32]::MaxValue,
@@ -104,7 +104,7 @@ https://kb.vmware.com/s/article/82553
         [int]$LimitErrors = [Int32]::MaxValue,
         [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
         [switch]$AsUser,
-        [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
+        [Parameter(ParameterSetName='Move',Mandatory=$False,ValueFromPipelineByPropertyName=$False)]
         [string]$MovePath = ""
     )
 
