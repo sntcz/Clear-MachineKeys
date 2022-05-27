@@ -160,6 +160,7 @@ PROCESS {
         # Define and initialize counters
         $processedFiles = 0
         $errorFiles = 0
+        $skippedFiles = 0
         # Initialize move path and create folder it is not exist
         if (-not $Delete) {
             if ($MovePath.Length -eq 0) {
@@ -210,24 +211,27 @@ PROCESS {
                         }
                     }
                 }
-                if (($processedFiles % 100) -eq 0) {
-                    if ($LimitFiles -lt [Int32]::MaxValue) {
-                        Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"}) $($processedFiles)/$($LimitFiles)" -CurrentOperation $file.Name -PercentComplete ($processedFiles/$LimitFiles*100)
-                    }
-                    else {
-                        Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"})" -CurrentOperation $file.Name
-                    }
-                }
+                $currentOperation = "$(if($Delete){"Delete"}else{"Move"}): $($file.Name)"
             }
             else {
                 Write-Debug "Skip: $($file.Name)"
-            }            
+                $currentOperation = "Skip: $($file.Name)"
+                $skippedFiles++
+            }
+            if ((($processedFiles + $skippedFiles) % 100) -eq 0) {
+                if ($LimitFiles -lt [Int32]::MaxValue) {
+                    Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"}): $($processedFiles)/$($LimitFiles), Skipped files: $skippedFiles" -CurrentOperation $currentOperation -PercentComplete ($processedFiles/$LimitFiles*100)
+                }
+                else {
+                    Write-Progress -Activity "Clear-MachineKeys" -Status "$(if($Delete){"Deleting files"}else{"Moving files"}): $processedFiles, Skipped files: $skippedFiles," -CurrentOperation $currentOperation
+                }
+            }
         }
         Write-Progress -Activity "Clear-MachineKeys" -Status "Done" -Completed
         if ($WhatIfPreference) { 
-            Write-Host "WhatIf: I will $(if($Delete) {'delete'} else {'move'}) $ProcessedFiles files." -ForegroundColor Yellow
+            Write-Host "WhatIf: I will $(if($Delete) {'delete'} else {'move'}) $ProcessedFiles files. Skip $skippedFiles files." -ForegroundColor Yellow
         } else {
-            Write-Host "$processedFiles files $(if($Delete) {'Deleted'} else {'moved'}) and $errorFiles errors." -ForegroundColor $(if ($errorFiles -eq 0) {"Green"} else {"Red"})
+            Write-Host "$processedFiles files $(if($Delete) {'Deleted'} else {'moved'}) and $errorFiles errors. Skipped $skippedFiles files." -ForegroundColor $(if ($errorFiles -eq 0) {"Green"} else {"Red"})
         }        
     }
     catch {
