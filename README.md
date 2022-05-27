@@ -20,7 +20,7 @@ This script must be executed with administrative rights (Run As Administrator).
 
 ## Script parameters
 
-1. Path - File path to the keys folder exhibiting this issue. For example:
+1. **Path** - File path to the keys folder exhibiting this issue. For example:
    * C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys (default value)
    * C:\ProgramData\Microsoft\Crypto\RSA\S-1-5-18
    * C:\Windows\ServiceProfiles\LocalService\AppData\Roaming\Microsoft\Crypto\RSA\S-1-5-19
@@ -28,9 +28,13 @@ This script must be executed with administrative rights (Run As Administrator).
    * C:\Windows\ServiceProfiles\NetworkService\AppData\Roaming\Microsoft\SystemCertificates\Request\Certificates
    * C:\Users\All Users\Microsoft\Crypto\RSA\MachineKeys (on Windows 10 same as C:\ProgramData\...)
    * C:\Users\All Users\Microsoft\Crypto\RSA\S-1-5-18 (on Windows 10 same as C:\ProgramData\...)
-2. CreatedBefore - Defines retention period and takes value in days. Only files created before the specified time are considered for deletion or moving. Default value is 90 days.
-3. Delete - Files are deleted rather than moved. Moving files allowing simple way to restore them if any issues are observed. Files are moved to $Path\_saved folder. Use this parameter carefully.
-4. WhatIf - Dry run.
+2. **CreatedBefore** - Defines retention period and takes value in days. Only files created before the specified time are considered for deletion or moving. Default value is 90 days.
+3. **Delete** - Files are deleted rather than moved. Moving files allowing simple way to restore them if any issues are observed. Files are moved to $Path\_saved folder. Use this parameter carefully.
+4. **LimitFiles** - Limit processed files to max count. Files which cannot be moved or deleted are not counted.
+5. **LimitErrors** - Stop process after limited errors.
+6. **AsUser** - Exclude current user private keys too. Experimental feature.
+7. **MovePath** - Destination path for backup. Default value is *Path*\_saved, but can be overriden by this parameter.
+8. **WhatIf** - Dry run.
 
 ## Periodic execution
 
