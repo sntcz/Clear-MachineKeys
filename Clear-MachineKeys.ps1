@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0
+.VERSION 1.1
 .GUID d4b03f9b-ddb6-420b-8417-d390a89cba50
 .AUTHOR Tomas Kouba (S&T CZ)
 .COMPANYNAME S&T CZ
@@ -79,7 +79,7 @@ Description
 This command delete 100 keys from default folder older than 90 days.
               
 .NOTES
-Version : 1.0, 2022-05-05
+Version : 1.1, 2022-05-27
 File Name : Clear-MachineKeys.ps1
 Requires : PowerShell
  
