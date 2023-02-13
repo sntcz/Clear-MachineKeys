@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.1
+.VERSION 1.2
 .GUID d4b03f9b-ddb6-420b-8417-d390a89cba50
 .AUTHOR Tomas Kouba (S&T CZ)
 .COMPANYNAME S&T CZ
@@ -79,7 +79,7 @@ Description
 This command delete 100 keys from default folder older than 90 days.
               
 .NOTES
-Version : 1.1, 2022-05-27
+Version : 1.2, 2023-02-09
 File Name : Clear-MachineKeys.ps1
 Requires : PowerShell
  
@@ -136,7 +136,7 @@ PROCESS {
         $lastWrite = (Get-Date).AddDays(-$CreatedBefore)
         $lastBoot = (Get-CimInstance -ComputerName localhost -Class CIM_OperatingSystem -ErrorAction Ignore).LastBootUpTime
 
-        if ($lastBoot.AddDays(-1) -gt $lastWrite) {
+        if ($null -ne $lastBoot -and $lastBoot.AddDays(-1) -gt $lastWrite) {
             Write-Host "Last boot was $lastBoot, but you want to process files before $lastWrite. Try use '-CreatedBefore $(((Get-Date) - $lastBoot).Days + 1)'"
         }
 
@@ -148,7 +148,8 @@ PROCESS {
             "c2319c42033a5ca7f44e731bfd3fa2b5_$machineGuid", # Microsoft Internet Information Server
             "bedbf0b4da5f8061b6444baedf4c00b1_$machineGuid", # WMSvc Certificate Key Container
             "7a436fe806e483969f48a894af2fe9a1_$machineGuid", # MS IIS DCOM Server
-            "f686aace6942fb7f7ceb231212eef4a4_$machineGuid"  # TSSecKeySet1
+            "f686aace6942fb7f7ceb231212eef4a4_$machineGuid", # TSSecKeySet1
+            "ebe703b502d1b47c601316a0c4fb6047_$machineGuid"  # OPC Router Machine Key
             )
         Write-Progress -Activity "Clear-MachineKeys" -Status "Enumeratin exclusions"
         # Add exclusions from local machine cert store
@@ -214,7 +215,12 @@ PROCESS {
                 $currentOperation = "$(if($Delete){"Delete"}else{"Move"}): $($file.Name)"
             }
             else {
-                Write-Debug "Skip: $($file.Name)"
+                if ($WhatIfPreference) {                     
+                    Write-Host "WhatIf: I will skip $($file.Name)" -ForegroundColor Yellow
+                }
+                else {
+                    Write-Debug "Skip: $($file.Name)"
+                }
                 $currentOperation = "Skip: $($file.Name)"
                 $skippedFiles++
             }
