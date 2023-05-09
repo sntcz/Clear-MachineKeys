@@ -1,9 +1,9 @@
 <#PSScriptInfo
-.VERSION 1.2
+.VERSION 1.3
 .GUID d4b03f9b-ddb6-420b-8417-d390a89cba50
 .AUTHOR Tomas Kouba (S&T CZ)
 .COMPANYNAME S&T CZ
-.COPYRIGHT (c) 2022 S&T CZ. All rights reserved.
+.COPYRIGHT (c) 2022-23 S&T CZ. All rights reserved.
 .TAGS RSA MachineKeys
 .LICENSEURI https://raw.githubusercontent.com/sntcz/Clear-MachineKeys/main/LICENSE
 .PROJECTURI https://github.com/sntcz/Clear-MachineKeys
@@ -87,6 +87,7 @@ Requires : PowerShell
 https://social.msdn.microsoft.com/Forums/en-US/35176c80-3199-4df7-a2bf-9124d31e3621
 https://port135.com/remove-older-files-machinekeys/
 https://kb.vmware.com/s/article/82553
+https://learn.microsoft.com/en-us/answers/questions/293983/accidentally-deleted-rsa-machine-key-from-one-clus
 
 #>
 
@@ -149,7 +150,8 @@ PROCESS {
             "bedbf0b4da5f8061b6444baedf4c00b1_$machineGuid", # WMSvc Certificate Key Container
             "7a436fe806e483969f48a894af2fe9a1_$machineGuid", # MS IIS DCOM Server
             "f686aace6942fb7f7ceb231212eef4a4_$machineGuid", # TSSecKeySet1
-            "ebe703b502d1b47c601316a0c4fb6047_$machineGuid"  # OPC Router Machine Key
+            "ebe703b502d1b47c601316a0c4fb6047_$machineGuid", # OPC Router Machine Key
+            "4f692a7dc1b824e1f679f93fadd08a3b_$machineGuid"  # Failover Cluster (ClusInfraCert)
             )
         Write-Progress -Activity "Clear-MachineKeys" -Status "Enumeratin exclusions"
         # Add exclusions from local machine cert store

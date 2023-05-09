@@ -29,11 +29,11 @@ This script must be executed with administrative rights (Run As Administrator).
    * C:\Users\All Users\Microsoft\Crypto\RSA\MachineKeys (on Windows 10 same as C:\ProgramData\...)
    * C:\Users\All Users\Microsoft\Crypto\RSA\S-1-5-18 (on Windows 10 same as C:\ProgramData\...)
 2. **CreatedBefore** - Defines retention period and takes value in days. Only files created before the specified time are considered for deletion or moving. Default value is 90 days.
-3. **Delete** - Files are deleted rather than moved. Moving files allowing simple way to restore them if any issues are observed. Files are moved to $Path\_saved folder. Use this parameter carefully.
+3. **Delete** - Files are deleted rather than moved. Moving files allowing simple way to restore them if any issues are observed. Files are moved to $Path\_saved folder. Use this parameter carefully. **_Always prefer move over delete._**
 4. **LimitFiles** - Limit processed files to max count. Files which cannot be moved or deleted are not counted.
 5. **LimitErrors** - Stop process after limited errors.
 6. **AsUser** - Exclude current user private keys too. Experimental feature.
-7. **MovePath** - Destination path for backup. Default value is *Path*\_saved, but can be overriden by this parameter.
+7. **MovePath** - Destination path for backup. Default value is _Path_\\\_saved, but can be overriden by this parameter.
 8. **WhatIf** - Dry run.
 
 ## Periodic execution
@@ -53,3 +53,4 @@ Register-ScheduledJob -Name "Clear-MachineKeys" -FilePath "<<path to the script>
 * <https://techcommunity.microsoft.com/t5/iis-support-blog/machinekeys-folder-fills-up-quickly/ba-p/1608008>
 * <https://kb.vmware.com/s/article/82553>
 * <https://social.msdn.microsoft.com/Forums/en-US/35176c80-3199-4df7-a2bf-9124d31e3621>
+* <https://learn.microsoft.com/en-us/answers/questions/293983/accidentally-deleted-rsa-machine-key-from-one-clus>
