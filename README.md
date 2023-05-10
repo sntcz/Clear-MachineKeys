@@ -10,9 +10,10 @@ folder.
 
 `Clear-MachineKeys` scripts scans folder passed as parameter and move or delete old unused private key containers in it.
 So the script excludes following key containers:
-    1. Containers with well-known names
-    2. Keys found in the machine certificate store
-    3. Key containers created recently (last write time)
+
+1. Containers with well-known names
+2. Keys found in the machine certificate store
+3. Key containers created recently (last write time)
 
 **NOTE:** Use this script at your own risk. Deleting keys that are in use, may create some issues.
 
